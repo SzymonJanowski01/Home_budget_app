@@ -5,7 +5,7 @@ if __name__ == "__main__":
     root = ctk.CTk()
     root.title("Home Budget App")
 
-    width, height = 400, 300
+    width, height = 600, 500
     root.geometry(f"{width}x{height}")
     root.update_idletasks()
 
