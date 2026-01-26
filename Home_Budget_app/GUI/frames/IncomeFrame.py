@@ -24,6 +24,9 @@ class IncomeFrame(ctk.CTkFrame):
         self.user_list_frame.columnconfigure((1, 2, 3, 4, 5, 6, 7, 8), weight=0)
         self.user_list_frame.columnconfigure((0, 9), weight=1)
 
+        # Window flags
+        self.currently_editing_user_id = None
+
         # User_management_frame widgets
         self.label = ctk.CTkLabel(self.user_management_frame, text="Chose income split:",
                                   font=ctk.CTkFont(size=20, weight="bold"))
@@ -67,7 +70,7 @@ class IncomeFrame(ctk.CTkFrame):
             try:
                 name = self.new_user_name_entry.get()
                 income = float(self.new_user_income_entry.get())
-                if name == "" or income <= 0:
+                if name == "" or income < 0:
                     raise ValueError("Invalid input")
                 new_user_id = max(self.users.keys(), default=0) + 1
                 self.users[new_user_id] = {"name": name, "income": income}
@@ -92,6 +95,7 @@ class IncomeFrame(ctk.CTkFrame):
             self.add_users_label.grid(row=6, column=0, columnspan=100, pady=20, padx=20)
         else:
             self.add_users_label.grid_forget()
+            self.user_widgets = {}
             name_label = ctk.CTkLabel(self.user_list_frame, text="Name:", font=ctk.CTkFont(size=20, weight="bold"))
             name_label.grid(row=0, column=1, padx=5, pady=10)
             earnings_label = ctk.CTkLabel(self.user_list_frame, text="Earnings:",
@@ -124,3 +128,116 @@ class IncomeFrame(ctk.CTkFrame):
                                               command=lambda uid=user_id: self.remove_user(uid))
                 remove_button.grid(row=1 + counter, column=7, padx=5, pady=10)
 
+                # Hidden buttons
+                confirm_button = ctk.CTkButton(self.user_list_frame, text="Confirm", fg_color="green",
+                                               hover_color="darkgreen", corner_radius=50, height=35, width=20,
+                                               command=lambda uid=user_id: self.save_modified_user(uid))
+                cancel_button = ctk.CTkButton(self.user_list_frame, text="Cancel", fg_color="red",
+                                              hover_color="darkred", corner_radius=50, height=35, width=20,
+                                              command=lambda uid=user_id: self.cancel_editing(uid))
+
+                self.user_widgets[user_id] = {
+                    "name": name_entry,
+                    "income": income_entry,
+                    "edit_button": edit_button,
+                    "remove_button": remove_button,
+                    "confirm_button": confirm_button,
+                    "cancel_button": cancel_button,
+                    "row": 1 + counter
+                }
+
+    def edit_user(self, user_id: int) -> None:
+        if self.currently_editing_user_id:
+            CTkMessagebox(title="Invalid action",
+                          message="You can only edit one user at a time.",
+                          icon="cancel")
+            return
+
+        self.currently_editing_user_id = user_id
+        widgets = self.user_widgets[user_id]
+
+        # Capture original values for restoring if no values has changed
+        widgets["original_name"] = widgets["name"].get()
+        widgets["original_income"] = widgets["income"].get()
+
+        widgets["name"].configure(state="normal", border_color="Yellow")
+        widgets["income"].configure(state="normal", border_color="Yellow")
+
+        widgets["edit_button"].grid_forget()
+        widgets["remove_button"].grid_forget()
+        widgets["confirm_button"].grid(row=widgets["row"], column=6, padx=5, pady=10)
+        widgets["cancel_button"].grid(row=widgets["row"], column=7, padx=5, pady=10)
+
+    def save_modified_user(self, user_id: int) -> None:
+        widgets = self.user_widgets[user_id]
+
+        # Get window theme to ensure proper default border color
+        theme = ctk.ThemeManager.theme["CTkEntry"]
+        if widgets["name"]._get_appearance_mode() == "light":
+            default = 0
+        else:
+            default = 1
+
+        # Check if there are any changes and if so - validate them
+        if widgets["name"].get() == widgets["original_name"] and widgets["income"].get() == widgets["original_income"]:
+            pass
+        else:
+            try:
+                if not widgets["name"].get():
+                    raise ValueError("Invalid input")
+                elif not widgets["income"].get():
+                    widgets["income"].insert(0, float(0))
+                elif float(widgets["income"].get()) < 0:
+                    raise ValueError("Invalid input")
+            except (ValueError, TypeError):
+                CTkMessagebox(title="Invalid Input",
+                              message="Please enter a valid name and a positive number for income.",
+                              icon="cancel")
+                return
+
+        widgets["name"].configure(state="disabled", border_color=theme["border_color"][default])
+        widgets["income"].configure(state="disabled", border_color=theme["border_color"][default])
+
+        # Bring back original buttons
+        widgets["confirm_button"].grid_forget()
+        widgets["cancel_button"].grid_forget()
+        widgets["edit_button"].grid(row=widgets["row"], column=6, padx=5, pady=10)
+        widgets["remove_button"].grid(row=widgets["row"], column=7, padx=5, pady=10)
+
+        self.currently_editing_user_id = None
+        # TODO: DB editing
+
+    def cancel_editing(self, user_id: int) -> None:
+        widgets = self.user_widgets[user_id]
+
+        # Get window theme to ensure proper default border color
+        theme = ctk.ThemeManager.theme["CTkEntry"]
+        if widgets["name"]._get_appearance_mode() == "light":
+            default = 0
+        else:
+            default = 1
+
+        # Restore entries to their original state
+        widgets["name"].delete(0, "end")
+        widgets["name"].insert(0, widgets["original_name"])
+        widgets["name"].configure(state="disabled", border_color=theme["border_color"][default])
+        widgets["income"].delete(0, "end")
+        widgets["income"].insert(0, widgets["original_income"])
+        widgets["income"].configure(state="disabled", border_color=theme["border_color"][default])
+
+        # Bring back original buttons
+        widgets["confirm_button"].grid_forget()
+        widgets["cancel_button"].grid_forget()
+        widgets["edit_button"].grid(row=widgets["row"], column=6, padx=5, pady=10)
+        widgets["remove_button"].grid(row=widgets["row"], column=7, padx=5, pady=10)
+
+        self.currently_editing_user_id = None
+
+    def remove_user(self, user_id: int) -> None:
+        del self.users[user_id]
+        self.clear_user_list()
+        self.load_users()
+
+    def clear_user_list(self) -> None:
+        for w in self.user_list_frame.winfo_children():
+            w.destroy()
