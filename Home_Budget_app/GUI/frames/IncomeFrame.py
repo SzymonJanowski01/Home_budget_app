@@ -89,7 +89,7 @@ class IncomeFrame(ctk.CTkFrame):
                           icon="warning")
         # TODO: implement functionality to add user to DB
 
-    def load_users(self):
+    def load_users(self) -> None:
         # TODO: implement loading from DB
         if len(self.users) == 0:
             self.add_users_label.grid(row=6, column=0, columnspan=100, pady=20, padx=20)

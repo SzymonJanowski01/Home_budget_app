@@ -9,12 +9,10 @@ from GUI.frames.AnalyticsFrame import AnalyticsFrame
 from GUI.frames.HistoryFrame import HistoryFrame
 
 
-class App(ctk.CTk):
-    def __init__(self) -> None:
-        super().__init__()
-
-        self.title("Home Budget App")
-        self.geometry("1400x700")
+class MainWindow(ctk.CTkFrame):
+    def __init__(self, master) -> None:
+        super().__init__(master)
+        self.pack(fill="both", expand=True)
 
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(1, weight=1)
@@ -88,7 +86,7 @@ class App(ctk.CTk):
 
         self.show_frame("HomeFrame")
 
-    def show_frame(self, frame_name) -> None:
+    def show_frame(self, frame_name: str) -> None:
         frame = self.frames[frame_name]
         frame.tkraise()
 
