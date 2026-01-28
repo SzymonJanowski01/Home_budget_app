@@ -36,10 +36,11 @@ class LoginWindow(ctk.CTkFrame):
         self.login_label = ctk.CTkLabel(self.login_frame, text="Log-in!", font=ctk.CTkFont(size=20, weight="bold"))
         self.login_label.grid(row=3, column=1, columnspan=2, padx=10, pady=10)
 
-        self.login_username_or_email_entry = ctk.CTkEntry(self.login_frame, placeholder_text="Enter username or email!",
-                                                          width=250, height=35, corner_radius=50)
-        self.login_username_or_email_entry.grid(row=4, column=1, columnspan=2, padx=10, pady=10)
-        self.login_username_or_email_entry.bind("<Return>", lambda e: self.login())
+        # TODO: In future add previously used emails to .json and show them as hints
+        self.login_email_entry = ctk.CTkEntry(self.login_frame, placeholder_text="Enter email!", width=250, height=35,
+                                              corner_radius=50)
+        self.login_email_entry.grid(row=4, column=1, columnspan=2, padx=10, pady=10)
+        self.login_email_entry.bind("<Return>", lambda e: self.login())
 
         self.login_password = ctk.CTkEntry(self.login_frame, placeholder_text="Enter password!", width=250, height=35,
                                            corner_radius=50, show="*")
