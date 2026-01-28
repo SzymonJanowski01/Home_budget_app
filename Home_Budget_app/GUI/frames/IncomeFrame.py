@@ -42,13 +42,15 @@ class IncomeFrame(ctk.CTkFrame):
 
         self.new_user_name_entry = ctk.CTkEntry(self.user_management_frame, placeholder_text="Enter user name",
                                                 width=200, height=35, corner_radius=50)
+        self.new_user_name_entry.bind("<Return>", lambda e: self.confirm_user_button_event())
         self.new_user_name_entry.grid(row=3, column=1, padx=5, pady=10)
         self.new_user_income_entry = ctk.CTkEntry(self.user_management_frame, placeholder_text="Enter user income",
                                                   width=200, height=35, corner_radius=50)
+        self.new_user_income_entry.bind("<Return>", lambda e: self.confirm_user_button_event())
         self.new_user_income_entry.grid(row=3, column=2, padx=5, pady=10)
         self.confirm_user_button = ctk.CTkButton(self.user_management_frame, text="Confirm", fg_color="blue",
                                                  hover_color="darkblue", corner_radius=50, height=35, width=20,
-                                                 command=self.confirm_user_button)
+                                                 command=self.confirm_user_button_event)
         self.confirm_user_button.grid(row=3, column=3, padx=5, pady=10)
 
         self.add_users_label = ctk.CTkLabel(self.user_management_frame, text="Let's add some users to get started!",
@@ -65,7 +67,7 @@ class IncomeFrame(ctk.CTkFrame):
         if len(self.users) < 2:
             pass
 
-    def confirm_user_button(self) -> None:
+    def confirm_user_button_event(self) -> None:
         if len(self.users) < 5:
             try:
                 name = self.new_user_name_entry.get()
@@ -108,10 +110,12 @@ class IncomeFrame(ctk.CTkFrame):
                 name_entry = ctk.CTkEntry(self.user_list_frame, width=200, height=35, corner_radius=50)
                 name_entry.insert(0, user_items["name"])
                 name_entry.grid(row=1 + counter, column=1, padx=5, pady=10)
+                name_entry.bind("<Return>", lambda e, uid=user_id: self.save_modified_user(user_id))
                 name_entry.configure(state="disabled")
                 income_entry = ctk.CTkEntry(self.user_list_frame, width=200, height=35, corner_radius=50)
                 income_entry.insert(0, str(user_items["income"]))
                 income_entry.grid(row=1 + counter, column=2, padx=5, pady=10)
+                income_entry.bind("<Return>", lambda e, uid=user_id: self.save_modified_user(user_id))
                 income_entry.configure(state="disabled")
                 grid_splitter = ctk.CTkLabel(self.user_list_frame, text="|", font=ctk.CTkFont(size=20, weight="bold"))
                 grid_splitter.grid(row=1 + counter, column=3, padx=5, pady=10)
