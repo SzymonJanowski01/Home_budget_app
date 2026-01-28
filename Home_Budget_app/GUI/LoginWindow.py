@@ -35,10 +35,12 @@ class LoginWindow(ctk.CTkFrame):
         self.username_or_email_entry = ctk.CTkEntry(self.login_frame, placeholder_text="Enter username or email!",
                                                     width=250, height=35, corner_radius=50)
         self.username_or_email_entry.grid(row=4, column=1, columnspan=2, padx=10, pady=10)
+        self.username_or_email_entry.bind("<Return>", lambda e: self.login())
 
         self.password = ctk.CTkEntry(self.login_frame, placeholder_text="Enter password!", width=250, height=35,
                                      corner_radius=50, show="*")
         self.password.grid(row=5, column=1, columnspan=2, padx=10, pady=10)
+        self.password.bind("<Return>", lambda e: self.login())
         self.login_button = ctk.CTkButton(self.login_frame, text="Confirm", fg_color="blue", hover_color="darkblue",
                                           corner_radius=50, height=35, width=150, command=self.login)
         self.login_button.grid(row=6, column=1, columnspan=2, padx=10, pady=10)
